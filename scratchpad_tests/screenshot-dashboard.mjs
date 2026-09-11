@@ -1,0 +1,13 @@
+import puppeteer from "puppeteer-core";
+const executablePath = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const browser = await puppeteer.launch({ executablePath, headless: true });
+const page = await browser.newPage();
+await page.setViewport({ width: 1440, height: 900 });
+await page.goto("http://localhost:3000/login", { waitUntil: "networkidle0" });
+await page.type('input[name="phone"]', "01000000000");
+await page.type('input[name="password"]', "admin123");
+await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click('button[type="submit"]')]);
+await page.goto("http://localhost:3000/", { waitUntil: "networkidle0" });
+await new Promise((r) => setTimeout(r, 500));
+await page.screenshot({ path: "scratchpad_tests/dashboard.png", fullPage: true });
+await browser.close();

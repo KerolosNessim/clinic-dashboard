@@ -1,0 +1,546 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── الأدوار ──
+enum Role {
+  SUPER_ADMIN
+  DOCTOR
+  STAFF
+}
+
+// ── حالات السن ──
+enum ToothCondition {
+  HEALTHY
+  FILLED
+  EXTRACTED
+  NEEDS_TREATMENT
+  CROWN
+}
+
+// ── حالات الموعد ──
+enum AppointmentStatus {
+  CONFIRMED
+  ATTENDED
+  NO_SHOW
+  CANCELLED
+}
+
+// ── نوع الموعد ──
+enum AppointmentType {
+  CHECKUP
+  FOLLOWUP
+  EMERGENCY
+}
+
+// ── حالة خطة العلاج ──
+enum PlanStatus {
+  PROPOSED
+  APPROVED
+  IN_PROGRESS
+  COMPLETED
+}
+
+// ── حالة الفاتورة ──
+enum InvoiceStatus {
+  PAID
+  PARTIAL
+  OVERDUE
+}
+
+// ── طريقة الدفع ──
+enum PaymentMethod {
+  CASH
+  TRANSFER
+}
+
+// ── نوع حركة المخزون ──
+enum StockMovementType {
+  ADD
+  CONSUME
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
+// ── نوع احتساب المستحقات ──
+enum EarningType {
+  PERCENTAGE
+  FIXED
+  MIXED
+}
+
+// ── حالة طلب المراجعة ──
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ── فئة المصروف ──
+enum ExpenseCategory {
+  RENT
+  UTILITIES
+  SALARIES
+  MAINTENANCE
+  MARKETING
+  OTHER
+}
+
+// ── فئة المخزون ──
+enum InventoryCategory {
+  MATERIALS
+  TOOLS
+  DEVICES
+}
+
+model User {
+  id       String  @id @default(cuid())
+  name     String
+  phone    String  @unique
+  password String
+  role     Role
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branches      UserBranch[]
+  doctorProfile DoctorProfile?
+
+  createdAppointments Appointment[] @relation("AppointmentCreatedBy")
+  doctorAppointments  Appointment[] @relation("AppointmentDoctor")
+  doctorVisits        Visit[]       @relation("VisitDoctor")
+  toothRecordUpdates  ToothRecord[]
+
+  treatmentPlansAsDoctor TreatmentPlan[]      @relation("TreatmentPlanDoctor")
+  weeklyAvailability     WeeklyAvailability[] @relation("AvailabilityDoctor")
+
+  earningRules   EarningRule[]
+  earningRecords EarningRecord[]
+
+  stockMovements StockMovement[]
+
+  approvalRequestsMade     ApprovalRequest[] @relation("ApprovalRequested")
+  approvalRequestsResolved ApprovalRequest[] @relation("ApprovalResolved")
+
+  expenses         Expense[]
+  paymentsRecorded Payment[]
+  refundsApproved  Refund[]
+  auditLogs        AuditLog[]
+}
+
+model DoctorProfile {
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  specialty         String
+  licenseNumber     String
+  qualification     String
+  yearsOfExperience Int?
+  nationalId        String
+  whatsapp          String?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Branch {
+  id           String   @id @default(cuid())
+  name         String
+  address      String
+  city         String
+  phones       String[]
+  workingHours Json
+  email        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users              UserBranch[]
+  appointments       Appointment[]
+  visits             Visit[]
+  inventory          InventoryItem[]
+  expenses           Expense[]
+  invoices           Invoice[]
+  weeklyAvailability WeeklyAvailability[]
+  registeredPatients Patient[]
+
+  stockTransfersFrom StockMovement[] @relation("TransferFromBranch")
+  stockTransfersTo   StockMovement[] @relation("TransferToBranch")
+}
+
+model UserBranch {
+  userId     String
+  branchId   String
+  assignedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  branch Branch @relation(fields: [branchId], references: [id])
+
+  @@id([userId, branchId])
+}
+
+model Patient {
+  id                   String    @id @default(cuid())
+  fullName             String
+  // Null on a walk-in ("كشف عادي") patient created straight from booking — filled in later
+  // via the full patient form if they become a returning patient.
+  birthDate            DateTime?
+  gender               String?
+  phone                String
+  nationalId           String?
+  address              String?
+  city                 String?
+  job                  String?
+  maritalStatus        String?
+  emergencyName        String?
+  emergencyPhone       String?
+  referralSource       String?
+  registrationBranchId String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  medicalHistory MedicalHistory?
+  toothRecords   ToothRecord[]
+  visits         Visit[]
+  appointments   Appointment[]
+  treatmentPlans TreatmentPlan[]
+  invoices       Invoice[]
+
+  registrationBranch Branch @relation(fields: [registrationBranchId], references: [id])
+
+  @@index([registrationBranchId])
+  @@index([phone])
+  @@index([createdAt])
+}
+
+model MedicalHistory {
+  id                 String   @id @default(cuid())
+  patientId          String   @unique
+  allergies          String[] @default([])
+  chronicDiseases    String[] @default([])
+  isPregnant         Boolean?
+  currentMedications String?
+  updatedAt          DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id])
+}
+
+model ToothRecord {
+  id          String         @id @default(cuid())
+  patientId   String
+  toothNumber Int
+  condition   ToothCondition @default(HEALTHY)
+  notes       String?
+  updatedBy   String
+  updatedAt   DateTime       @updatedAt
+
+  patient       Patient @relation(fields: [patientId], references: [id])
+  updatedByUser User    @relation(fields: [updatedBy], references: [id])
+
+  @@unique([patientId, toothNumber])
+}
+
+model Visit {
+  id              String    @id @default(cuid())
+  patientId       String
+  doctorId        String
+  branchId        String
+  appointmentId   String?   @unique
+  dateTime        DateTime
+  diagnosis       String
+  procedure       String
+  affectedTeeth   Int[]     @default([])
+  sessionCost     Decimal   @db.Decimal(10, 2)
+  doctorNotes     String?
+  nextStep        String?
+  recallDate      DateTime?
+  treatmentPlanId String?
+  createdAt       DateTime  @default(now())
+
+  patient       Patient        @relation(fields: [patientId], references: [id])
+  doctor        User           @relation("VisitDoctor", fields: [doctorId], references: [id])
+  branch        Branch         @relation(fields: [branchId], references: [id])
+  appointment   Appointment?   @relation(fields: [appointmentId], references: [id])
+  treatmentPlan TreatmentPlan? @relation(fields: [treatmentPlanId], references: [id])
+  invoices      Invoice[]
+
+  @@index([patientId, dateTime])
+  @@index([doctorId, dateTime])
+  @@index([branchId, dateTime])
+}
+
+model TreatmentPlan {
+  id             String     @id @default(cuid())
+  patientId      String
+  doctorId       String
+  description    String
+  targetTeeth    Int[]
+  estimatedCost  Decimal    @db.Decimal(10, 2)
+  status         PlanStatus @default(PROPOSED)
+  patientConsent Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  patient  Patient            @relation(fields: [patientId], references: [id])
+  doctor   User               @relation("TreatmentPlanDoctor", fields: [doctorId], references: [id])
+  sessions TreatmentSession[]
+  visits   Visit[]
+  invoices Invoice[]
+
+  @@index([patientId])
+}
+
+model TreatmentSession {
+  id            String    @id @default(cuid())
+  planId        String
+  sessionNumber Int
+  description   String
+  expectedDate  DateTime?
+  status        String    @default("PLANNED")
+
+  plan TreatmentPlan @relation(fields: [planId], references: [id])
+}
+
+model WeeklyAvailability {
+  id        String   @id @default(cuid())
+  doctorId  String
+  weekStart DateTime
+  weekEnd   DateTime
+  dayOfWeek Int
+  branchId  String
+  startTime String
+  endTime   String
+  updatedBy String
+  updatedAt DateTime @updatedAt
+
+  doctor User   @relation("AvailabilityDoctor", fields: [doctorId], references: [id])
+  branch Branch @relation(fields: [branchId], references: [id])
+}
+
+model Appointment {
+  id              String            @id @default(cuid())
+  patientId       String
+  doctorId        String
+  branchId        String
+  dateTime        DateTime
+  durationMinutes Int               @default(30)
+  type            AppointmentType   @default(CHECKUP)
+  status          AppointmentStatus @default(CONFIRMED)
+  notes           String?
+  createdBy       String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  patient       Patient @relation(fields: [patientId], references: [id])
+  doctor        User    @relation("AppointmentDoctor", fields: [doctorId], references: [id])
+  branch        Branch  @relation(fields: [branchId], references: [id])
+  createdByUser User    @relation("AppointmentCreatedBy", fields: [createdBy], references: [id])
+  visit         Visit?
+
+  @@index([doctorId, dateTime])
+  @@index([branchId, dateTime])
+  @@index([patientId])
+  @@index([status, dateTime])
+}
+
+model InventoryItem {
+  id            String            @id @default(cuid())
+  name          String
+  category      InventoryCategory
+  unit          String
+  branchId      String
+  quantity      Decimal           @default(0) @db.Decimal(10, 2)
+  reorderPoint  Decimal           @default(0) @db.Decimal(10, 2)
+  purchasePrice Decimal           @db.Decimal(10, 2)
+  expiryDate    DateTime?
+  supplier      String?
+  supplierPhone String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  branch    Branch          @relation(fields: [branchId], references: [id])
+  movements StockMovement[]
+
+  @@index([branchId])
+}
+
+model StockMovement {
+  id           String            @id @default(cuid())
+  itemId       String
+  type         StockMovementType
+  quantity     Decimal           @db.Decimal(10, 2)
+  fromBranchId String?
+  toBranchId   String?
+  reason       String?
+  referenceId  String?
+  performedBy  String
+  createdAt    DateTime          @default(now())
+
+  item            InventoryItem @relation(fields: [itemId], references: [id])
+  fromBranch      Branch?       @relation("TransferFromBranch", fields: [fromBranchId], references: [id])
+  toBranch        Branch?       @relation("TransferToBranch", fields: [toBranchId], references: [id])
+  performedByUser User          @relation(fields: [performedBy], references: [id])
+
+  @@index([itemId])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  patientId      String
+  branchId       String
+  visitId        String?
+  planId         String?
+  items          Json
+  subtotal       Decimal       @db.Decimal(10, 2)
+  discount       Decimal       @default(0) @db.Decimal(10, 2)
+  total          Decimal       @db.Decimal(10, 2)
+  status         InvoiceStatus @default(PARTIAL)
+  isLocked       Boolean       @default(true)
+  sequenceNumber String        @unique
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  patient  Patient        @relation(fields: [patientId], references: [id])
+  branch   Branch         @relation(fields: [branchId], references: [id])
+  visit    Visit?         @relation(fields: [visitId], references: [id])
+  plan     TreatmentPlan? @relation(fields: [planId], references: [id])
+  payments Payment[]
+  refunds  Refund[]
+
+  @@index([patientId])
+  @@index([branchId, status])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  invoiceId         String
+  method            PaymentMethod
+  amount            Decimal       @db.Decimal(10, 2)
+  reference         String?
+  proofImageUrl     String?
+  installmentNumber Int?
+  recordedBy        String
+  createdAt         DateTime      @default(now())
+
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id])
+  recordedByUser User     @relation(fields: [recordedBy], references: [id])
+  refunds        Refund[]
+
+  @@index([invoiceId])
+  @@index([createdAt])
+}
+
+model Refund {
+  id         String        @id @default(cuid())
+  invoiceId  String
+  paymentId  String?
+  amount     Decimal       @db.Decimal(10, 2)
+  reason     String
+  method     PaymentMethod
+  approvedBy String
+  createdAt  DateTime      @default(now())
+
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id])
+  payment        Payment? @relation(fields: [paymentId], references: [id])
+  approvedByUser User     @relation(fields: [approvedBy], references: [id])
+}
+
+// ملاحظة: entityType/entityId هنا نمط polymorphic عام (يشير لأي كيان مثل Payment أو Invoice)
+// ولذلك لا توجد علاقة Prisma حقيقية (Foreign Key) بينه وبين Invoice/Payment مباشرة.
+model ApprovalRequest {
+  id          String         @id @default(cuid())
+  type        String
+  entityType  String
+  entityId    String
+  requestedBy String
+  reason      String
+  status      ApprovalStatus @default(PENDING)
+  adminNote   String?
+  resolvedBy  String?
+  resolvedAt  DateTime?
+  // Set once an approved EDIT_PAYMENT request has actually been used to edit its one target
+  // payment via updatePayment() — makes the approval single-use instead of leaving a standing
+  // grant that could be reused to edit a different payment on the same invoice.
+  consumedAt  DateTime?
+  createdAt   DateTime       @default(now())
+
+  requestedByUser User  @relation("ApprovalRequested", fields: [requestedBy], references: [id])
+  resolvedByUser  User? @relation("ApprovalResolved", fields: [resolvedBy], references: [id])
+
+  @@index([status])
+  @@index([entityType, entityId])
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  branchId    String
+  category    ExpenseCategory
+  description String
+  amount      Decimal         @db.Decimal(10, 2)
+  date        DateTime
+  isRecurring Boolean         @default(false)
+  recordedBy  String
+  createdAt   DateTime        @default(now())
+
+  branch         Branch @relation(fields: [branchId], references: [id])
+  recordedByUser User   @relation(fields: [recordedBy], references: [id])
+
+  @@index([branchId, date])
+  @@index([date])
+}
+
+model EarningRule {
+  id             String      @id @default(cuid())
+  userId         String
+  type           EarningType
+  percentage     Decimal?    @db.Decimal(5, 2)
+  fixedAmount    Decimal?    @db.Decimal(10, 2)
+  isUnifiedRate  Boolean     @default(true)
+  procedureRates Json?
+  effectiveFrom  DateTime
+  effectiveTo    DateTime?
+  previousRuleId String?     @unique
+  createdAt      DateTime    @default(now())
+
+  user         User         @relation(fields: [userId], references: [id])
+  previousRule EarningRule? @relation("EarningRuleHistory", fields: [previousRuleId], references: [id])
+  nextRule     EarningRule? @relation("EarningRuleHistory")
+}
+
+model EarningRecord {
+  id          String   @id @default(cuid())
+  userId      String
+  periodStart DateTime
+  periodEnd   DateTime
+  totalAmount Decimal  @db.Decimal(10, 2)
+  details     Json
+  isPaid      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, periodStart])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
