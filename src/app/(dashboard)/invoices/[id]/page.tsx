@@ -110,31 +110,55 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="rounded-xl border border-border bg-white p-6">
-        <p className="mb-3 text-sm font-semibold text-foreground">بنود الفاتورة</p>
-        <div className="overflow-hidden rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-xs text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 text-start font-medium">البند</th>
-                <th className="px-4 py-2 text-start font-medium">السعر</th>
-                <th className="px-4 py-2 text-start font-medium">الكمية</th>
-                <th className="px-4 py-2 text-start font-medium">الإجمالي</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {items.map((item, index) => (
-                <tr key={index}>
-                  <td className="px-4 py-2.5 text-foreground">{item.name}</td>
-                  <td className="px-4 py-2.5 text-slate-600">{formatCurrency(item.price)}</td>
-                  <td className="px-4 py-2.5 text-slate-600">{item.quantity}</td>
-                  <td className="px-4 py-2.5 font-medium text-foreground">
-                    {formatCurrency(item.price * item.quantity)}
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-foreground">بنود الفاتورة</p>
+          <span className="text-xs text-muted-foreground">{items.length} بند</span>
+        </div>
+        {items.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-10 text-center">
+            <Receipt className="size-8 text-slate-300" />
+            <p className="text-sm text-muted-foreground">لا توجد بنود في هذه الفاتورة</p>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-xs text-muted-foreground">
+                <tr>
+                  <th className="w-10 px-4 py-2.5 text-start font-medium">#</th>
+                  <th className="px-4 py-2.5 text-start font-medium">البند</th>
+                  <th className="px-4 py-2.5 text-end font-medium">السعر</th>
+                  <th className="px-4 py-2.5 text-end font-medium">الكمية</th>
+                  <th className="px-4 py-2.5 text-end font-medium">الإجمالي</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {items.map((item, index) => (
+                  <tr key={index} className="transition-colors hover:bg-slate-50/80">
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground">{index + 1}</td>
+                    <td className="px-4 py-2.5 font-medium text-foreground">{item.name}</td>
+                    <td className="px-4 py-2.5 text-end tabular-nums text-slate-600">
+                      {formatCurrency(item.price)}
+                    </td>
+                    <td className="px-4 py-2.5 text-end tabular-nums text-slate-600">{item.quantity}</td>
+                    <td className="px-4 py-2.5 text-end tabular-nums font-semibold text-foreground">
+                      {formatCurrency(item.price * item.quantity)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-border bg-slate-50/60">
+                  <td colSpan={4} className="px-4 py-2.5 text-end text-xs font-medium text-muted-foreground">
+                    الإجمالي الفرعي
+                  </td>
+                  <td className="px-4 py-2.5 text-end tabular-nums font-semibold text-foreground">
+                    {formatCurrency(Number(invoice.subtotal))}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </tfoot>
+            </table>
+          </div>
+        )}
 
         <div className="mt-4 space-y-1.5 border-t border-border pt-4 text-sm">
           <div className="flex items-center justify-between text-slate-600">

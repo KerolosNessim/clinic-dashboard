@@ -136,7 +136,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-350 px-6 py-8 sm:px-8 space-y-4">
-      <div className="mb-8 flex items-start justify-between">
+      <div className="mb-8 flex items-start justify-between max-md:flex-col max-md:gap-4">
         <div className="text-right">
           <p className="text-[11px] font-semibold tracking-[0.06em] text-slate-400">
             {today}
@@ -147,7 +147,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/appointments/new"
-          className="flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90"
+          className="flex h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white hover:bg-primary/90 max-md:self-end"
         >
           حجز موعد
           <CalendarPlus className="size-4.5" strokeWidth={1.8} />

@@ -16,6 +16,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { CONDITION_META, CONDITION_ORDER, toothLabel } from "@/lib/dental-chart";
+import { cn } from "@/lib/utils";
 import type { ToothCondition } from "@/generated/prisma/enums";
 import type { ToothState } from "./use-dental-chart";
 
@@ -34,7 +35,7 @@ export function ToothDetailPanel({
 }) {
   if (toothNumber === null) {
     return (
-      <div className="rounded-xl border border-border bg-white p-6">
+      <div className="rounded-xl border border-border bg-white p-4 sm:p-6">
         <Empty className="border-0 py-10">
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -78,13 +79,13 @@ function ToothDetailForm({
   const meta = CONDITION_META[condition];
 
   return (
-    <div className="rounded-xl border border-border bg-white p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <p className="text-lg font-bold text-foreground">السن رقم {toothNumber}</p>
-          <p className="text-xs text-muted-foreground">{toothLabel(toothNumber)}</p>
+    <div className="rounded-xl border border-border bg-white p-4 sm:p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate text-lg font-bold text-foreground">السن رقم {toothNumber}</p>
+          <p className="truncate text-xs text-muted-foreground">{toothLabel(toothNumber)}</p>
         </div>
-        <Badge className={`${meta.swatchBg} ${meta.swatchBorder} ${meta.swatchText}`}>{meta.label}</Badge>
+        <Badge className={cn("shrink-0", meta.swatchBg, meta.swatchBorder, meta.swatchText)}>{meta.label}</Badge>
       </div>
 
       <div className="space-y-4 border-t border-border pt-4">

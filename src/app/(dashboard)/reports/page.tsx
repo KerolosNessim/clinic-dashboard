@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Wallet, Receipt, TrendingUp, CalendarClock } from "lucide-react";
+import { Wallet, Receipt, TrendingUp } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth-utils";
 import { getFinancialReport, getBranchComparison, getOperationalReport, type ReportRange } from "@/lib/actions/reports";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -80,7 +79,6 @@ export default async function ReportsPage({
               to={toDateInputValue(range.to)}
               totalRevenue={financial.totalRevenue}
               totalExpenses={financial.totalExpenses}
-              totalEarnings={financial.totalEarnings}
               netProfit={financial.netProfit}
               branches={branches.map((b) => ({
                 branchName: b.branchName,
@@ -126,7 +124,6 @@ export default async function ReportsPage({
               <p className="mt-5 text-3xl font-extrabold tracking-tight text-foreground">
                 {formatCurrency(financial.netProfit)}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">بعد خصم المستحقات: {formatCurrency(financial.totalEarnings)}</p>
             </div>
           </div>
 
@@ -150,21 +147,23 @@ export default async function ReportsPage({
               <p className="text-sm font-semibold text-foreground">ملخص الفروع</p>
             </div>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الفرع</TableHead>
-                  <TableHead>الإيرادات</TableHead>
-                  <TableHead>المصروفات</TableHead>
-                  <TableHead>صافي الربح</TableHead>
+              <TableHeader className="bg-slate-50">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-xs font-semibold text-muted-foreground text-start">الفرع</TableHead>
+                  <TableHead className="text-start text-xs font-semibold text-muted-foreground  ">الإيرادات</TableHead>
+                  <TableHead className="text-start text-xs font-semibold text-muted-foreground ">المصروفات</TableHead>
+                  <TableHead className="text-start text-xs font-semibold text-muted-foreground">صافي الربح</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {branches.map((b) => (
                   <TableRow key={b.branchId}>
                     <TableCell className="font-medium text-foreground">{b.branchName}</TableCell>
-                    <TableCell>{formatCurrency(b.revenue)}</TableCell>
-                    <TableCell>{formatCurrency(b.expenses)}</TableCell>
-                    <TableCell>{formatCurrency(b.netProfit)}</TableCell>
+                    <TableCell className="text-start tabular-nums text-slate-600">{formatCurrency(b.revenue)}</TableCell>
+                    <TableCell className="text-start tabular-nums text-slate-600">{formatCurrency(b.expenses)}</TableCell>
+                    <TableCell className="text-start tabular-nums font-semibold text-foreground">
+                      {formatCurrency(b.netProfit)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -200,67 +199,32 @@ export default async function ReportsPage({
               <TopProceduresChart data={operational.topProcedures} />
             )}
           </div>
-
-          <div className="overflow-hidden rounded-xl border border-border bg-white">
-            <div className="flex items-center gap-2 border-b border-border px-5 py-4">
-              <CalendarClock className="size-4.5 text-amber-600" />
-              <p className="text-sm font-semibold text-foreground">مرضى مستحقون للمتابعة</p>
-            </div>
-            {operational.upcomingFollowUps.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-                لا يوجد مرضى مستحقون للمتابعة حالياً
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>المريض</TableHead>
-                    <TableHead>الهاتف</TableHead>
-                    <TableHead>الطبيب</TableHead>
-                    <TableHead>تاريخ المتابعة</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {operational.upcomingFollowUps.map((f) => (
-                    <TableRow key={f.visitId}>
-                      <TableCell className="font-medium text-foreground">
-                        <Link href={`/patients/${f.patientId}`} className="hover:underline">
-                          {f.patientName}
-                        </Link>
-                      </TableCell>
-                      <TableCell dir="ltr">{f.patientPhone}</TableCell>
-                      <TableCell>{f.doctorName}</TableCell>
-                      <TableCell>{formatDate(f.recallDate)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </div>
         </TabsContent>
 
         <TabsContent value="branches" className="mt-4">
           <div className="overflow-hidden rounded-xl border border-border bg-white">
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الفرع</TableHead>
-                  <TableHead>الإيرادات</TableHead>
-                  <TableHead>المصروفات</TableHead>
-                  <TableHead>صافي الربح</TableHead>
-                  <TableHead>عدد المواعيد</TableHead>
-                  <TableHead>مرضى جدد</TableHead>
+              <TableHeader className="bg-slate-50">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="text-xs font-semibold text-muted-foreground">الفرع</TableHead>
+                  <TableHead className="text-start text-xs font-semibold text-muted-foreground">الإيرادات</TableHead>
+                  <TableHead className="text-start text-xs font-semibold text-muted-foreground">المصروفات</TableHead>
+                  <TableHead className="text-start text-xs font-semibold text-muted-foreground">صافي الربح</TableHead>
+                  <TableHead className="text-start text-xs font-semibold text-muted-foreground">عدد المواعيد</TableHead>
+                  <TableHead className="text-start text-xs font-semibold text-muted-foreground">مرضى جدد</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {branches.map((b) => (
                   <TableRow key={b.branchId}>
                     <TableCell className="font-medium text-foreground">{b.branchName}</TableCell>
-                    <TableCell>{formatCurrency(b.revenue)}</TableCell>
-                    <TableCell>{formatCurrency(b.expenses)}</TableCell>
-                    <TableCell>{formatCurrency(b.netProfit)}</TableCell>
-                    <TableCell>{b.appointmentsCount}</TableCell>
-                    <TableCell>{b.newPatientsCount}</TableCell>
+                    <TableCell className="text-start tabular-nums text-slate-600">{formatCurrency(b.revenue)}</TableCell>
+                    <TableCell className="text-start tabular-nums text-slate-600">{formatCurrency(b.expenses)}</TableCell>
+                    <TableCell className="text-start tabular-nums font-semibold text-foreground">
+                      {formatCurrency(b.netProfit)}
+                    </TableCell>
+                    <TableCell className="text-start tabular-nums text-slate-600">{b.appointmentsCount}</TableCell>
+                    <TableCell className="text-start tabular-nums text-slate-600">{b.newPatientsCount}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -10,7 +10,6 @@ export function ExportFinancialPdfButton({
   to,
   totalRevenue,
   totalExpenses,
-  totalEarnings,
   netProfit,
   branches,
 }: {
@@ -18,7 +17,6 @@ export function ExportFinancialPdfButton({
   to: string;
   totalRevenue: number;
   totalExpenses: number;
-  totalEarnings: number;
   netProfit: number;
   branches: { branchName: string; revenue: number; expenses: number; netProfit: number }[];
 }) {
@@ -38,7 +36,6 @@ export function ExportFinancialPdfButton({
           to={to}
           totalRevenue={totalRevenue}
           totalExpenses={totalExpenses}
-          totalEarnings={totalEarnings}
           netProfit={netProfit}
           branches={branches}
         />
@@ -58,7 +55,7 @@ export function ExportFinancialPdfButton({
   }
 
   return (
-    <Button type="button" variant="outline" onClick={handleExport} disabled={isGenerating}>
+    <Button type="button" className="bg-red-700 hover:bg-red-600 text-white" onClick={handleExport} disabled={isGenerating}>
       {isGenerating && <Spinner />}
       تصدير PDF
       <FileDown data-icon="inline-end" />

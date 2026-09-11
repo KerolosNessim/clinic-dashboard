@@ -28,12 +28,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   // SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { LogoMark } from "@/app/(auth)/login/logo-mark";
 import { logoutAction } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 import { ROLE_LABEL, initials } from "@/lib/user-display";
 import { Button } from "../ui/button";
+import { useState } from "react";
 
 type NavItem = {
   href: string;
@@ -71,11 +73,14 @@ const NAV_ITEMS: NavItem[] = [
 
 export function Sidebar({ user }: { user: { name: string; role: Role } }) {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
   const items = NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(user.role));
+  const handleNavClick = () => {
+    if (isMobile) setOpenMobile(false);
+  };
   // const showSettings = !SETTINGS_ITEM.roles || SETTINGS_ITEM.roles.includes(user.role);
-
   return (
-    <SidebarPrimitive side="right" collapsible="offcanvas" className="border-s">
+    <SidebarPrimitive side="right" collapsible="offcanvas" className="border-e">
       <SidebarHeader className="h-16 flex-row items-center justify-start gap-3.5 border-b px-3 py-0">
         <div className="flex size-7 items-center justify-center rounded-[7px] bg-primary">
           <LogoMark className="size-4 text-white" />
@@ -92,7 +97,7 @@ export function Sidebar({ user }: { user: { name: string; role: Role } }) {
                 <SidebarMenuButton
                   isActive={active}
                   className="h-11 gap-2 rounded-md px-3 text-sm font-medium text-slate-600   data-active:bg-sky-500 data-active:font-semibold data-active:text-white"
-                  render={<Link href={item.href} />}
+                  render={<Link href={item.href} onClick={handleNavClick} />}
                 >
                   <item.icon className="size-5" strokeWidth={1.8} />
                   <span>{item.label}</span>

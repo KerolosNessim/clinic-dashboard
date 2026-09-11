@@ -21,13 +21,13 @@ function ToothRow({
   onSelect: (n: number) => void;
 }) {
   return (
-    <div dir="rtl" className="flex items-end justify-center gap-0.5 sm:gap-1">
+    <div dir="rtl" className="flex min-w-max items-end justify-center gap-0.5 sm:gap-1">
       {teeth.map((n, i) => {
         const state = getTooth(n);
         return (
           <div
             key={n}
-            className={cn(i === 7 && "pe-2 border-e border-dashed border-slate-300 me-1")}
+            className={cn(i === 7 && "border-e border-dashed border-slate-300 pe-1 me-0.5 sm:pe-2 sm:me-1")}
           >
             <Tooth
               toothNumber={n}
@@ -58,8 +58,8 @@ export function DentalChart({
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      <div className="rounded-xl border border-border bg-white p-6 lg:col-span-2">
-        <div className="mx-auto w-full max-w-2xl">
+      <div className="rounded-xl border border-border bg-white p-4 sm:p-6 lg:col-span-2">
+        <div className="mx-auto w-full max-w-2xl overflow-x-auto sm:overflow-x-visible">
           <div className="mx-auto mb-2 h-3 w-[85%] rounded-full bg-rose-100" />
           <ToothRow teeth={UPPER_TEETH} jaw="upper" getTooth={getTooth} selectedTooth={selectedTooth} onSelect={setSelectedTooth} />
 

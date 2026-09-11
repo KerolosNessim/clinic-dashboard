@@ -128,48 +128,49 @@ export default async function PatientDetailPage({
   return (
     <div className="mx-auto w-full max-w-350 px-6 py-8 sm:px-8">
       <div className="sticky top-12 z-5 -mx-6 mb-4 border-b border-border bg-slate-50/95 px-6 py-4 backdrop-blur sm:-mx-8 sm:px-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="size-11">
+        <div className="flex items-center justify-between max-md:flex-col max-md:items-start max-md:gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <Avatar className="size-11 shrink-0">
               <AvatarFallback className="bg-sky-100 text-sky-700">
                 {initials(patient.fullName)}
               </AvatarFallback>
             </Avatar>
-            <div className="text-right">
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold text-foreground">{patient.fullName}</h1>
+            <div className="min-w-0 text-right">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="truncate text-lg font-bold text-foreground">{patient.fullName}</h1>
                 {!isProfileComplete && (
-                  <Badge className="rounded-full bg-amber-100 text-amber-800">بيانات غير مكتملة</Badge>
+                  <Badge className="shrink-0 rounded-full bg-amber-100 text-amber-800">بيانات غير مكتملة</Badge>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="truncate text-xs text-muted-foreground">
                 {[patientAge !== null ? `${patientAge} سنة` : null, patient.gender, patient.registrationBranch.name]
                   .filter(Boolean)
                   .join(" · ")}
               </p>
             </div>
           </div>
-          <PatientFormDialog
-            patient={patient}
-            branches={filterOptions.branches}
-            showBranchSelect={showBranchSelectInForm}
-            defaultBranchId={patient.registrationBranchId}
-            triggerLabel="تعديل"
-            triggerVariant="amber"
-            triggerIcon={<Pencil data-icon="inline-end" />}
-          />
-
+          <div className="shrink-0 max-md:self-end">
+            <PatientFormDialog
+              patient={patient}
+              branches={filterOptions.branches}
+              showBranchSelect={showBranchSelectInForm}
+              defaultBranchId={patient.registrationBranchId}
+              triggerLabel="تعديل"
+              triggerVariant="amber"
+              triggerIcon={<Pencil data-icon="inline-end" />}
+            />
+          </div>
         </div>
       </div>
 
       <Tabs defaultValue="info" dir="rtl">
-        <TabsList className="h-auto! w-full justify-start bg-white">
-          <TabsTrigger value="info">المعلومات</TabsTrigger>
-          <TabsTrigger value="medical">التاريخ الطبي</TabsTrigger>
-          <TabsTrigger value="chart">مخطط الأسنان</TabsTrigger>
-          <TabsTrigger value="visits">الزيارات</TabsTrigger>
-          <TabsTrigger value="plan">خطة العلاج</TabsTrigger>
-          <TabsTrigger value="invoices">الفواتير</TabsTrigger>
+        <TabsList className="h-auto! w-full flex-nowrap justify-start gap-1 overflow-x-auto overflow-y-hidden bg-white">
+          <TabsTrigger value="info" className="flex-none shrink-0">المعلومات</TabsTrigger>
+          <TabsTrigger value="medical" className="flex-none shrink-0">التاريخ الطبي</TabsTrigger>
+          <TabsTrigger value="chart" className="flex-none shrink-0">مخطط الأسنان</TabsTrigger>
+          <TabsTrigger value="visits" className="flex-none shrink-0">الزيارات</TabsTrigger>
+          <TabsTrigger value="plan" className="flex-none shrink-0">خطة العلاج</TabsTrigger>
+          <TabsTrigger value="invoices" className="flex-none shrink-0">الفواتير</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="mt-4">

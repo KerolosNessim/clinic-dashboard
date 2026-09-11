@@ -26,7 +26,7 @@ export default async function AssistantDetailPage({ params }: { params: Promise<
   return (
     <div className="mx-auto w-full max-w-350 px-6 py-8 sm:px-8">
       <div className="sticky top-12 z-5 -mx-6 mb-4 border-b border-border bg-slate-50/95 px-6 py-4 backdrop-blur sm:-mx-8 sm:px-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between max-md:flex-col max-md:items-start max-md:gap-3">
           <div className="flex items-center gap-3">
             <Avatar className="size-11">
               <AvatarFallback className="bg-sky-100 text-sky-700">{initials(assistant.name)}</AvatarFallback>
@@ -41,7 +41,7 @@ export default async function AssistantDetailPage({ params }: { params: Promise<
               {assistant.isActive ? "نشط" : "معطّل"}
             </Badge>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 max-md:self-end">
             <UserFormDialog
               user={assistant}
               branches={branchOptions}
