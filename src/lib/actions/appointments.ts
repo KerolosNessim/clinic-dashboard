@@ -144,6 +144,12 @@ export async function updateAppointment(id: string, values: unknown) {
 
   if (!parsed.data.patientId) return { error: "المريض مطلوب" };
 
+  const existing = await prisma.appointment.findUnique({ where: { id }, select: { status: true } });
+  if (!existing) return { error: "الموعد غير موجود" };
+  if (existing.status !== "CONFIRMED") {
+    return { error: "لا يمكن تعديل موعد تم تسجيل حالته بالفعل" };
+  }
+
   const canAccess = await canAccessBranch(user.id, user.role, parsed.data.branchId);
   if (!canAccess) return { error: "لا تملك صلاحية التعديل في هذا الفرع" };
 

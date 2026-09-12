@@ -220,14 +220,16 @@ export default async function DashboardPage() {
               عرض
               <Eye data-icon="inline-end" />
             </Button>
-            <Button
-              variant="amber"
-              nativeButton={false}
-              render={<Link href={`/appointments/${appt.id}/edit`} />}
-            >
-              تعديل
-              <Pencil data-icon="inline-end" />
-            </Button>
+            {appt.status === "CONFIRMED" && (
+              <Button
+                variant="amber"
+                nativeButton={false}
+                render={<Link href={`/appointments/${appt.id}/edit`} />}
+              >
+                تعديل
+                <Pencil data-icon="inline-end" />
+              </Button>
+            )}
           </div>
         )}
         empty={{ icon: CalendarX, title: "لا توجد مواعيد اليوم" }}
