@@ -416,6 +416,7 @@ export function AppointmentForm({
                   id="time"
                   type="time"
                   dir="ltr"
+                  lang="en-US"
                   className="h-11!"
                   min={dayHours && !dayHours.closed ? dayHours.open : undefined}
                   max={dayHours && !dayHours.closed ? dayHours.close : undefined}

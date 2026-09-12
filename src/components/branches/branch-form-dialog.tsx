@@ -235,6 +235,8 @@ export function BranchFormDialog({
                           <span className="text-sm text-slate-600">{entry.day}</span>
                           <Input
                             type="time"
+                            dir="ltr"
+                            lang="en-US"
                             className="h-9!"
                             disabled={entry.closed}
                             value={entry.open ?? ""}
@@ -246,6 +248,8 @@ export function BranchFormDialog({
                           />
                           <Input
                             type="time"
+                            dir="ltr"
+                            lang="en-US"
                             className="h-9!"
                             disabled={entry.closed}
                             value={entry.close ?? ""}

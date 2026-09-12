@@ -363,6 +363,7 @@ export function RecordVisitDialog({
                             id="nextAppointmentTime"
                             type="time"
                             dir="ltr"
+                            lang="en-US"
                             className="h-11!"
                             min={nextDayHours && !nextDayHours.closed ? nextDayHours.open : undefined}
                             max={nextDayHours && !nextDayHours.closed ? nextDayHours.close : undefined}
