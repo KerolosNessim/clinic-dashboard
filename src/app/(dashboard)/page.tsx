@@ -243,7 +243,6 @@ const appointmentColumns: DataTableColumn<TodayAppointment>[] = [
     cell: (appt) => (
       <DataTablePrimaryCell
         title={appt.patient.fullName}
-        subtitle={`رقم: ${appt.patient.id.slice(-5)}`}
         avatarText={initials(appt.patient.fullName)}
       />
     ),
