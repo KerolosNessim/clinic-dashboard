@@ -55,15 +55,17 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
         <div className="flex items-center gap-1.5">
           {remaining > 0 && <PaymentDialog invoiceId={invoice.id} remainingAmount={remaining} />}
           {!invoice.isLocked && isSuperAdmin(user.role) && <RelockInvoiceButton invoiceId={invoice.id} />}
-          <ApprovalRequestDialog
-            invoiceId={invoice.id}
-            payments={invoice.payments.map((p) => ({
-              id: p.id,
-              amount: Number(p.amount),
-              method: p.method,
-              createdAt: p.createdAt,
-            }))}
-          />
+          {!isSuperAdmin(user.role) && (
+            <ApprovalRequestDialog
+              invoiceId={invoice.id}
+              payments={invoice.payments.map((p) => ({
+                id: p.id,
+                amount: Number(p.amount),
+                method: p.method,
+                createdAt: p.createdAt,
+              }))}
+            />
+          )}
         </div>
       </div>
 

@@ -191,6 +191,7 @@ const approvalRequestSchema = z.object({
 export async function submitApprovalRequest(values: unknown) {
   const user = await getCurrentUser();
   if (!user) return { error: "يجب تسجيل الدخول" };
+  if (isSuperAdmin(user.role)) return { error: "لا يمكن للأدمن طلب مراجعة من نفسه" };
 
   const parsed = approvalRequestSchema.safeParse(values);
   if (!parsed.success) {
